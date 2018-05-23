@@ -1,0 +1,38 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: doorbellnotifier
+  labels:
+    app: doorbellnotifier
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: doorbellnotifier
+  template:
+    metadata:
+      labels:
+        app: doorbellnotifier
+    spec:
+      containers:
+        - image: gcr.io/assignment1-179323/gs-mysql-data
+          name: doorbellnotifier
+          env:
+          - name: WORDPRESS_DB_HOST
+            value: mysql:3306
+          - name: WORDPRESS_DB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: mysql
+                key: password
+          ports:
+            - containerPort: 80
+              name: doorbell
+          volumeMounts:
+            - name: doorbellnotifier-persistent-storage
+              mountPath: /var/www/html
+      volumes:
+        - name: doorbellnotifier-persistent-storage
+          gcePersistentDisk:
+            pdName: doorbellnotifier-disk
+            fsType: ext4
